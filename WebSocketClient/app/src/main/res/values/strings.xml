@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">WebSocketClient</string>
+    <string name="app_name">WebsocketClient</string>
+    <string name="desc">Websocket Client</string>
+    <string name="input_hint">Input IP:Port</string>
+    <string name="connected">connected on %s</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
 </resources>
