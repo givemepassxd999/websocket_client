@@ -25,12 +25,21 @@ class MainViewModel @Inject constructor(private val client: Client) : ViewModel(
     }
 
     fun send() {
-        client.setMsg("")
+        viewModelScope.launch {
+            client.setMsg("AAA")
+        }
     }
 
     fun connection(host: String) {
         host.split(":").let {
-            client.connection(host)
+            if (it.size != 2) return
+            val ip = it[0]
+            val port = it[1].toInt()
+            viewModelScope.launch {
+                client.connection(host = ip, port = port) { connected ->
+                    _connectionState.value = UiState(connected = connected)
+                }
+            }
         }
     }
 

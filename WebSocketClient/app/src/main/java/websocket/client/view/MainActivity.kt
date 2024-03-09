@@ -44,15 +44,16 @@ class MainActivity : AppCompatActivity() {
     @Composable
     fun MainView(viewModel: MainViewModel) {
         val connectionState = viewModel.connectionState.collectAsState().value
-        Column(modifier = Modifier.padding(start = 10.dp)) {
+        Column {
             Text(
-                modifier = Modifier.padding(top = 10.dp),
+                modifier = Modifier.padding(start = 10.dp, top = 10.dp),
                 text = if (connectionState.connected) {
-                    ""
-                    //do connection thing
+                    getString(
+                        R.string.connected,
+                        viewModel.host.value,
+                    )
                 } else {
-                    ""
-                    //do disconnection thing
+                    getString(R.string.disconnected)
                 }
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -65,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                         .width(300.dp),
                 )
             }
-            Row(modifier = Modifier.padding(top = 10.dp)) {
+            Row(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
                 Button(onClick = {
                     viewModel.connection(viewModel.host.value)
                 }, enabled = connectionState.connected.not()) {
