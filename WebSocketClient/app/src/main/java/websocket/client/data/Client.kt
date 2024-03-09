@@ -2,6 +2,7 @@ package websocket.client.data
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import com.google.gson.Gson
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
@@ -11,6 +12,8 @@ import io.ktor.http.HttpMethod
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
+import websocket.client.data.ApiData.Companion.CLEAR
+import websocket.client.data.ApiData.Companion.INPUT
 
 
 // ref https://ktor.io/docs/getting-started-ktor-client-chat.html
@@ -18,10 +21,15 @@ class Client {
     private var client: HttpClient? = null
     private val tag = "@@" + HttpHeaders.Server::class.java.simpleName
     private var isConnected = false
-
+    private val gson = Gson()
     private var _msg = mutableStateOf("")
+    private var _isClear = mutableStateOf(false)
     fun setMsg(msg: String) {
         _msg.value = msg
+    }
+
+    fun clear() {
+        _isClear.value = true
     }
 
     suspend fun connection(host: String, port: Int, connectionState: ConnectionState) {
@@ -32,8 +40,10 @@ class Client {
             client?.webSocket(method = HttpMethod.Get, host = host, port = port, path = "/") {
                 Log.d(tag, "Started")
                 connectionState.accept(connected = true)
-                val userInputRoutine = launch { inputMessages() }
-                userInputRoutine.join()
+                val userRoutine = launch {
+                    event()
+                }
+                userRoutine.join()
             }
         } catch (e: ClosedReceiveChannelException) {
             Log.d(tag, "ClosedReceiveChannelException")
@@ -51,13 +61,29 @@ class Client {
         }
     }
 
-    private suspend fun DefaultClientWebSocketSession.inputMessages() {
+    private suspend fun DefaultClientWebSocketSession.event() {
         while (true) {
+            //user input msg
             if (_msg.value.isNotEmpty()) {
                 try {
-                    val frame = Frame.Text(_msg.value)
-                    send(frame = frame)
-                    _msg.value = ""
+                    InputData(_msg.value).let {
+                        val frame = Frame.Text(gson.toJson(ApiData(dataType = INPUT, data = it)))
+                        send(frame = frame)
+                        _msg.value = ""
+                    }
+                } catch (e: Exception) {
+                    println("Error while sending: " + e.localizedMessage)
+                    return
+                }
+            }
+            //clear text
+            if (_isClear.value) {
+                try {
+                    Clear().let {
+                        val frame = Frame.Text(gson.toJson(ApiData(dataType = CLEAR, clear = it)))
+                        send(frame = frame)
+                        _isClear.value = false
+                    }
                 } catch (e: Exception) {
                     println("Error while sending: " + e.localizedMessage)
                     return

@@ -41,6 +41,9 @@ android {
 
 dependencies {
 
+    // gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     // ktor
     implementation("io.ktor:ktor-client-core:2.3.9")
     implementation("io.ktor:ktor-client-cio:2.3.9")

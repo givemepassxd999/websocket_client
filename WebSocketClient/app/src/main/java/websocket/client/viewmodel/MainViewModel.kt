@@ -14,6 +14,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val client: Client) : ViewModel() {
+
+    private val _connectionState = MutableStateFlow(UiState())
+    val connectionState: StateFlow<UiState> = _connectionState.asStateFlow()
+
     private var _host = mutableStateOf("")
     val host: State<String> = _host
 
@@ -22,10 +26,8 @@ class MainViewModel @Inject constructor(private val client: Client) : ViewModel(
 
     fun clearInput() {
         _input.value = ""
+        client.clear()
     }
-
-    private val _connectionState = MutableStateFlow(UiState())
-    val connectionState: StateFlow<UiState> = _connectionState.asStateFlow()
 
     fun setHost(host: String) {
         _host.value = host
