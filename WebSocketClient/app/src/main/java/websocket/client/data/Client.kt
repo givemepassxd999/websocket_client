@@ -11,8 +11,10 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import websocket.client.data.ApiData.Companion.CLEAR
+import websocket.client.data.ApiData.Companion.GO_WEB
 import websocket.client.data.ApiData.Companion.INPUT
 
 
@@ -24,6 +26,12 @@ class Client {
     private val gson = Gson()
     private var _msg = mutableStateOf("")
     private var _isClear = mutableStateOf(false)
+    private var _goWeb = MutableStateFlow(false)
+
+    fun goWeb() {
+        _goWeb.value = true
+    }
+
     fun setMsg(msg: String) {
         _msg.value = msg
     }
@@ -83,6 +91,18 @@ class Client {
                         val frame = Frame.Text(gson.toJson(ApiData(dataType = CLEAR, clear = it)))
                         send(frame = frame)
                         _isClear.value = false
+                    }
+                } catch (e: Exception) {
+                    println("Error while sending: " + e.localizedMessage)
+                    return
+                }
+            }
+            if (_goWeb.value) {
+                try {
+                    GoWeb().let {
+                        val frame = Frame.Text(gson.toJson(ApiData(dataType = GO_WEB, goWeb = it)))
+                        send(frame = frame)
+                        _goWeb.value = false
                     }
                 } catch (e: Exception) {
                     println("Error while sending: " + e.localizedMessage)

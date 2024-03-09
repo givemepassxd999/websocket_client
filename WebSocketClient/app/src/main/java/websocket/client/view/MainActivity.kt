@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
             }
             Row(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
                 Button(onClick = {
-
+                    viewModel.goWeb()
                 }) {
                     Text(text = stringResource(R.string.go))
                 }

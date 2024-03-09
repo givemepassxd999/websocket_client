@@ -24,6 +24,8 @@ class MainViewModel @Inject constructor(private val client: Client) : ViewModel(
     private var _input = mutableStateOf("")
     val input: State<String> = _input
 
+    fun goWeb() = client.goWeb()
+
     fun clearInput() {
         _input.value = ""
         client.clear()
