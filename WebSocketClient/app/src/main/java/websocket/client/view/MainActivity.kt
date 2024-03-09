@@ -81,14 +81,30 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     Text(text = stringResource(R.string.stop))
                 }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Textarea(
+                    value = viewModel.input.value,
+                    onValueChange = { viewModel.send(it) },
+                    placeholderText = stringResource(id = R.string.input_search_keyword),
+                    modifier = Modifier
+                        .padding(top = 10.dp, start = 10.dp)
+                        .width(300.dp),
+                )
+            }
+            Row(modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
+                Button(onClick = {
+
+                }) {
+                    Text(text = stringResource(R.string.go))
+                }
                 Button(
                     onClick = {
-                        viewModel.send()
+                        viewModel.clearInput()
                     },
-                    modifier = Modifier.padding(start = 10.dp),
-                    enabled = connectionState.connected
+                    modifier = Modifier.padding(start = 10.dp)
                 ) {
-                    Text(text = "send")
+                    Text(text = stringResource(R.string.clear))
                 }
             }
         }

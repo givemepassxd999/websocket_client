@@ -17,6 +17,13 @@ class MainViewModel @Inject constructor(private val client: Client) : ViewModel(
     private var _host = mutableStateOf("")
     val host: State<String> = _host
 
+    private var _input = mutableStateOf("")
+    val input: State<String> = _input
+
+    fun clearInput() {
+        _input.value = ""
+    }
+
     private val _connectionState = MutableStateFlow(UiState())
     val connectionState: StateFlow<UiState> = _connectionState.asStateFlow()
 
@@ -24,9 +31,10 @@ class MainViewModel @Inject constructor(private val client: Client) : ViewModel(
         _host.value = host
     }
 
-    fun send() {
+    fun send(msg: String) {
+        _input.value = msg
         viewModelScope.launch {
-            client.setMsg("AAA")
+            client.setMsg(msg)
         }
     }
 
