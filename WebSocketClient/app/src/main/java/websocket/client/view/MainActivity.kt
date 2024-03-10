@@ -3,25 +3,39 @@ package websocket.client.view
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
 import websocket.client.R
 import websocket.client.databinding.ActivityMainBinding
 import websocket.client.viewmodel.MainViewModel
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -38,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         binding.composeView.setContent {
             MainView(viewModel = viewModel)
+            DraggableCursor(viewModel = viewModel)
         }
     }
 
@@ -128,5 +143,28 @@ class MainActivity : AppCompatActivity() {
                 )
             },
         )
+    }
+
+    @Composable
+    private fun DraggableCursor(viewModel: MainViewModel) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            var offsetX by remember { mutableStateOf(100f) }
+            var offsetY by remember { mutableStateOf(1000f) }
+
+            Image(
+                painterResource(id = R.drawable.ic_android),
+                modifier = Modifier
+                    .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+                    .size(50.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount.x
+                            offsetY += dragAmount.y
+                            viewModel.setPoint(offsetX.roundToInt(), offsetY.roundToInt())
+                        }
+                    }, contentDescription = stringResource(id = R.string.desc)
+            )
+        }
     }
 }

@@ -1,13 +1,12 @@
 package websocket.client.data
 
+import android.graphics.Point
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.plugins.websocket.webSocket
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
@@ -16,17 +15,28 @@ import kotlinx.coroutines.launch
 import websocket.client.data.ApiData.Companion.CLEAR
 import websocket.client.data.ApiData.Companion.GO_WEB
 import websocket.client.data.ApiData.Companion.INPUT
+import websocket.client.data.ApiData.Companion.MOVE
 
 
 // ref https://ktor.io/docs/getting-started-ktor-client-chat.html
 class Client {
     private var client: HttpClient? = null
-    private val tag = "@@" + HttpHeaders.Server::class.java.simpleName
+    private val tag = "@@" + Client::class.java.simpleName
     private var isConnected = false
     private val gson = Gson()
-    private var _msg = mutableStateOf("")
-    private var _isClear = mutableStateOf(false)
+    private var _msg = MutableStateFlow("")
+    private var _isClear = MutableStateFlow(false)
     private var _goWeb = MutableStateFlow(false)
+    private val _point = MutableStateFlow(Point(0, 0))
+    private val _isPointChange = MutableStateFlow(false)
+
+    fun setPointChange(isChange: Boolean) {
+        _isPointChange.value = isChange
+    }
+
+    fun setPoint(x: Int, y: Int) {
+        _point.value = Point(x, y)
+    }
 
     fun goWeb() {
         _goWeb.value = true
@@ -107,6 +117,21 @@ class Client {
                 } catch (e: Exception) {
                     println("Error while sending: " + e.localizedMessage)
                     return
+                }
+            }
+            if (_isPointChange.value) {
+                _point.value.let { point ->
+                    try {
+                        _isPointChange.value = false
+                        Move(point.x, point.y).let {
+                            val frame = Frame.Text(
+                                gson.toJson(ApiData(dataType = MOVE, move = it))
+                            )
+                            send(frame = frame)
+                        }
+                    } catch (e: Exception) {
+                        println("Error while sending: " + e.localizedMessage)
+                    }
                 }
             }
         }

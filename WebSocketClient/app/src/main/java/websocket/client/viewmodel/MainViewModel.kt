@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import websocket.client.data.Client
 import javax.inject.Inject
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val client: Client) : ViewModel() {
@@ -23,6 +25,20 @@ class MainViewModel @Inject constructor(private val client: Client) : ViewModel(
 
     private var _input = mutableStateOf("")
     val input: State<String> = _input
+
+    private val prePoint = mutableStateOf(0 to 0)
+    fun setPoint(x: Int, y: Int) {
+        //calculate distance
+        val (px, py) = prePoint.value
+        val distance = sqrt((x - px).toDouble().pow(2.0) + (y - py).toDouble().pow(2.0))
+        if (distance > 10) {
+            prePoint.value = x to y
+        } else {
+            return
+        }
+        client.setPoint(x, y)
+        client.setPointChange(true)
+    }
 
     fun goWeb() = client.goWeb()
 
